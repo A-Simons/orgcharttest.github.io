@@ -1,0 +1,243 @@
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/d3-org-chart@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/d3-flextree@2.1.2/build/d3-flextree.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend Deca"
+      rel="stylesheet"
+    />
+<style>
+:root {
+  --main-color: #be1622;
+  --secondary-color:
+  --light-grey: #f2f2f2;
+  --dark-grey: #2f2f2f;
+  --dark-green: #003d4c
+  }
+ 
+.box {
+  font-family: "Lexend Deca", sans-serif;
+  }
+
+.box .popupdetails {
+  visibility: hidden;
+  font-size: 16px;
+  width: 330px;
+  background-color: white;
+  color: #2f2f2f;
+  text-align: center;
+  border-radius: 5px;
+  padding: 4px;
+  border-color: #2f2f2f;
+  position: absolute;
+  z-index: 1;
+  top: 60%;
+  left: 50%;
+  margin-left: -170px;
+  }
+  
+.box:hover .popupdetails {
+  visibility: visible;
+  }
+
+.popupdetails .popupdetails::after {
+  content: " ";
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: black transparent transparent transparent;
+  }
+
+.control-button {
+  font-family: "Lexend Deca", sans-serif;
+  background-color: white;
+  color: #2f2f2f;
+  border: 2px solid #be1622;
+  border-radius: 2px;
+  transition-duraction: 0.5s;
+  cursor: pointer;
+  }
+
+.control-button:hover {
+  background-color: #be1622;
+  color: #f2f2f2;
+
+.control-button:active {
+  background-color: #be1622;
+  transform: translateY(4px);
+  }
+
+#feg {
+  border: 2px solid #482F3D;
+  }
+  
+.control-button-pro {
+  font-family: "Lexend Deca", sans-serif;
+  background-color: white;
+  color: #2f2f2f;
+  border: 2px solid #003d4c;
+  border-radius: 2px;
+  transition-duraction: 0.5s;
+  cursor: pointer;
+  }
+  
+.control-button-pre {
+  font-family: "Lexend Deca", sans-serif;
+  background-color: white;
+  color: #2f2f2f;
+  border: 2px solid #48A9A6;
+  border-radius: 2px;
+  transition-duraction: 0.5s;
+  cursor: pointer;
+  }
+  
+.control-button-train {
+  font-family: "Lexend Deca", sans-serif;
+  background-color: white;
+  color: #2f2f2f;
+  border: 2px solid #482F3D;
+  border-radius: 2px;
+  transition-duraction: 0.5s;
+  cursor: pointer;
+  }
+.control-button-crg {
+  font-family: "Lexend Deca", sans-serif;
+  background-color: white;
+  color: #2f2f2f;
+  border: 2px solid #ECA72C;
+  border-radius: 2px;
+  transition-duraction: 0.5s;
+  cursor: pointer;
+  }
+
+.control-button-bs {
+  font-family: "Lexend Deca", sans-serif;
+  background-color: white;
+  color: #2f2f2f;
+  border: 2px solid #482F3D;
+  border-radius: 2px;
+  transition-duraction: 0.5s;
+  cursor: pointer;
+  }
+  
+.control-button-bs {
+  font-family: "Lexend Deca", sans-serif;
+  background-color: white;
+  color: #2f2f2f;
+  border: 2px solid #482F3D;
+  border-radius: 2px;
+  transition-duraction: 0.5s;
+  cursor: pointer;
+  }
+
+</style>
+
+
+<div class-"action-buttons">
+  <button onclick="chart.expandAll()" class="control-button">Expand All</button>
+  <button onclick="chart.collapseAll()" class="control-button">Collapse All</button>
+  <button onclick="chart.fit()" class="control-button">Fit</button>
+  <button onclick='chart.layout(["left","top"][index++%2]).render().fit()' class="control-button">Reorient</button>
+  <button onclick='chart.compact(!!(compact++%2)).render()' class="control-button">Compact View</button>
+  <button onclick='chart.fullscreen("body")' class="control-button">Fullscreen</button>
+  <!--<button onclick="downloadPdf()" class="control-button">Export PDF</button>
+  <br />//-->
+  <br />
+  <br>
+  <button id="feg" onclick='setFilter("FEG")' class="control-button">FEG</button>
+  <button onclick='setFilter("Protection")' class="control-button prot">Protection</button>
+  <button onclick='setFilter("Prevention")' class="control-button prev">Prevention</button>
+  <button onclick='setFilter("CRG")' class="control-button crg">CRG</button>
+  <button onclick='setFilter("JOT")' class="control-button jot">JOT</button>
+  <button onclick='setFilter("Training")' class="control-button train">Training</button>
+  <button onclick='setFilter("Workforce")' class="control-button wd">Workforce Development</button>
+  <button onclick='setFilter("Business")' class="control-button bs">Business Services</button>
+  <button onclick='setFilter("SIT")' class="control-button sit">Service Information</button>
+ </div>
+
+<div class="chart-container">
+</div>
+
+    <script>
+	  var index = 0;
+	  var compact = 0;
+	  var actNdCent = 0;
+	  var deptFilter = "*";
+	  
+	  function setFilter(area){
+	    deptFilter = area;
+		console.log(deptFilter);
+      }
+	  
+	  var csv = 'orgchart.csv';
+	  
+	  var data = d3.csvParse(csv);
+	  
+	  var filtered = data.filter(function(d) {
+	    return d["area"] === deptFilter
+		})
+	  
+      var chart;
+      d3.csv(
+        'orgchart.csv'
+      ).then(data => {
+        chart = new d3.OrgChart()
+          .container('.chart-container')
+          .data(data)
+		  .nodeWidth((d) => 350)
+          .initialZoom(0.7)
+          .nodeHeight((d) => 175)
+          .childrenMargin((d) => 40)
+          .compactMarginBetween((d) => 15)
+          .compactMarginPair((d) => 80)
+		  .linkUpdate(function (d, i, arr) {
+		    d3.select(this)
+			  .attr("stroke", '#2f2f2f')
+			  .attr("stroke-width", 1)
+			})
+          .nodeContent(function (d, i, arr, state) {
+            return `
+            <div class="box" style="padding-top:30px;background-color:none;margin-left:1px;height:${
+              d.height}px;border-radius:2px;overflow:visible">
+              <div class="popupdetails">Extension: ${d.data.extension} <br>
+			  Mobile: ${d.data.mobile} <br>
+			  Email: ${d.data.email}</div>
+			  <div style="height:${
+                d.height - 32
+              }px;padding-top:0px;background-color:white;border:1px solid #2f2f2f;border-radius:5px">
+            
+			
+                <img src=" ${
+                  d.data.imageUrl
+                }" style="margin-top:-30px;margin-left:${d.width / 2 - 30}px;border-radius:100px;width:60px;height:60px;" />
+				
+               <div style="margin-right:10px;margin-top:15px;float:right">${
+                 d.data.id
+               }</div>
+               
+               <div style="margin-top:-30px;background-color:${d.data.colour};height:10px;width:${
+                 d.width - 2
+               }px;border-radius:4px 4px 0px 0px"></div>
+
+               <div style="padding:20px; padding-top:35px;padding-bottom:8px;text-align:center;color:#2f2f2f">
+                   <div style="color:#2f2f2f;font-size:24px;font-weight:bold"> ${
+                     d.data.name
+                   } </div>
+                   <div style="color:#404040;font-size:16px;margin-top:4px"> ${
+                     d.data.positionName
+                   } </div>
+				   <div style="color:#404040;font-size:16px;margin-top:0px"> ${
+                     d.data.positionSubName
+                   } </div>
+               </div> 
+               <div style="display:flex;justify-content:space-between;padding-left:15px;padding-right:15px;">
+                 <div > Manages:  ${d.data._directSubordinates}</div>  
+                 <div > Oversees: ${d.data._totalSubordinates}</div>    
+               </div>
+              </div>     
+		    </div>`;
+          })
+	      .render();
+	  });
+    </script>
